@@ -9,19 +9,17 @@ using Microsoft.Extensions.Logging;
 
 namespace PayloadCapture
 {
-    public class Capture
+    public static class Capture
     {
-        private readonly string TargetBlobContainer;
-        private readonly StorageAccountAttribute StorageAccountAttribute;
+        private static readonly StorageAccountAttribute StorageAccountAttribute;
 
-        public Capture()
+        static Capture()
         {
-            TargetBlobContainer = Environment.GetEnvironmentVariable("TargetBlobContainer");
-            StorageAccountAttribute = new StorageAccountAttribute("TargetStorageAccount");
+            StorageAccountAttribute = new StorageAccountAttribute("AzureWebJobsStorage");
         }
 
         [FunctionName("Capture")]
-        public async Task<IActionResult> Run(
+        public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] HttpRequest req,
             Binder binder,
             ILogger log)
@@ -42,7 +40,7 @@ namespace PayloadCapture
             }
             
             // Sets the output path inside Azure Storage Blob based on the Target Blob Container, the current date, and the guessed extension
-            string blobPath = $"{TargetBlobContainer ?? "captured-payloads"}/{DateTime.Now:ddMMyyyyhhmmssffff}_{Guid.NewGuid()}";
+            string blobPath = $"captured-payloads/{DateTime.Now:ddMMyyyyhhmmssffff}_{Guid.NewGuid()}";
 
             // Dinamically binds the Blob output binding and copies the request payload to it
             var payloadOutputBindingAttributes = new Attribute[]
